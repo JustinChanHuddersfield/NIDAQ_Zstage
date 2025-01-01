@@ -1,0 +1,4 @@
+C:\Users\User\source\repos\NIDAQ_Zstage\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Users\User\source\repos\NIDAQ_Zstage\obj\Debug\net8.0-windows\App.g.cs
+C:\Users\User\source\repos\NIDAQ_Zstage\obj\Debug\net8.0-windows\NIDAQ_Zstage_MarkupCompile.cache
+C:\Users\User\source\repos\NIDAQ_Zstage\obj\Debug\net8.0-windows\NIDAQ_Zstage_MarkupCompile.lref
