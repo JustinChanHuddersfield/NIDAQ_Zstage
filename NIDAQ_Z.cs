@@ -31,11 +31,12 @@ namespace NIDAQ_Zstage
         //private MotorDirection direction;                 //; yet to find equivalent for NIDAQmx stage
         public string DevID { get; private set; } = "";
         public string[] DevList { get; private set; } = [];
+        public object DevBusType { get; private set; } = "";
 
 
         private readonly double _minPositionMm = 0;     // unsure about the values and param of the actual Z stage
         private readonly double _maxPositionMm = 10;
-        private readonly double _maxVelocityMms = 2.5;
+        private readonly double _maxVelocityMms = 1.5;
         private readonly string _units = "mm";
         public double minPositionMm { get { return _minPositionMm; } }
         public double maxPositionMm { get { return _maxPositionMm; } }
@@ -85,15 +86,22 @@ namespace NIDAQ_Zstage
             serialNumber = SN.ToString();
             DevID = device.DeviceID;
             DevList = myTask.Devices;
-          
+            DevBusType = device.BusType;
+
 
             // Open a connection to the device.
             try
                 {
                 //device.ReserveNetworkDevice();
                 //daqSys.ConnectTerminals();
+                // USING example from https://www.halvorsen.blog/documents/programming/csharp/tutorials/DAQmx.php
                 AOChannel myAOChannel;
-                myAOChannel = myTask.AOChannels.CreateVoltageChannel("dev1/ai0","myAOChannel",0,5,AOVoltageUnits.Volts);
+                myAOChannel = myTask.AOChannels.CreateVoltageChannel("dev1/ai0","myAOChannel",0,10,AOVoltageUnits.Volts);
+                AnalogSingleChannelWriter writer = new AnalogSingleChannelWriter(myTask.Stream);
+                double analogDataOut = 2;
+                writer.WriteSingleSample(true, analogDataOut);
+                
+                
 
                 }
             catch (Exception)
@@ -107,7 +115,7 @@ namespace NIDAQ_Zstage
                 {
                 try
                     {
-                    device.WaitForSettingsInitialized(5000);
+                    //device.WaitForSettingsInitialized(5000);    // for Thorlabs k cube 
                     }
                 catch (Exception)
                     {
@@ -143,6 +151,7 @@ namespace NIDAQ_Zstage
                 myTask.Stop();
                 myTask.Dispose();
                 device.Dispose();
+                device.Reset();
                 //daqSys.DisconnectAll();
                 //dTask.Abort;
                 }
@@ -150,7 +159,7 @@ namespace NIDAQ_Zstage
 
             }       // may need more work?
 
-        public void AbsoluteMove(double position)
+        public void AbsoluteMove(double position)       // yet to change
             {
             if (!IsConnected)
                 {
@@ -171,9 +180,9 @@ namespace NIDAQ_Zstage
                 throw new DeviceSettingsException(device.DeviceID, "Device Settings Exception from AbsoluteMove.");
                 }
 
-            }       // yet to change
+            }      
 
-        public void RelativeMove(double increment)
+        public void RelativeMove(double increment)      // yet to change
             {
             if (!IsConnected)
                 {
@@ -218,9 +227,9 @@ namespace NIDAQ_Zstage
                     return;
                     }
                 }
-            }       // yet to change
+            }       
 
-        public void SetVelocity(double velocity)
+        public void SetVelocity(double velocity)        // yet to change
             {
             if (!IsConnected)
                 {
@@ -229,14 +238,14 @@ namespace NIDAQ_Zstage
             VelocityParameters velPars = device.GetVelocityParams();
             velPars.MaxVelocity = Convert.ToDecimal(velocity);
             device.SetVelocityParams(velPars);
-            }       // yet to change
+            }       
 
-        public void SetAxis(int axis)
+        public void SetAxis(int axis)       // yet to change
             {
             throw new NotImplementedException();
-            }       // yet to change
+            }       
 
-        public void Home()
+        public void Home()      // yet to change
             {
             if (!IsConnected)
                 {
@@ -244,7 +253,9 @@ namespace NIDAQ_Zstage
                 }
             try
                 {
-                device.Home(60000);
+                //device.Home(60000);     // for Thorlabs K cube
+                device.Reset();
+                device.SelfCalibrate();
                 }
             catch (DeviceNotReadyException)
                 {
@@ -260,7 +271,7 @@ namespace NIDAQ_Zstage
                 }
 
 
-            }       // yet to change
+            }       
 
         public void triggerSlopeRising(object sender, System.EventArgs e)
             {
@@ -279,6 +290,7 @@ namespace NIDAQ_Zstage
                 Disconnect();
                 }
             }
+
 
         private static string[] ErrorDescriptions = new string[]
         {
